@@ -45,7 +45,15 @@ logic [1:0] ForwardB_EX;
 logic [1:0] ForwardA_ID;
 logic [1:0] ForwardB_ID;
 logic [2:0] funct3_EX_MEM;
+logic [1:0] ForwardJ_ID;
+logic [31:0] PC_ID_EX;
 
+logic Jump_ID_EX;
+logic Jump_ID;
+logic JumpTaken;
+logic IF_Flush;
+logic Stall;
+logic Jump;
 logic Branch_ID;
 logic IF_IDwrite;
 logic ALUsrc_ID_EX;
@@ -70,7 +78,7 @@ logic MEMtoReg_EX_MEM;
     //Inputs
     .ck(ck),
     .reset(reset),
-    .IF_flush(Branch_ID),
+    .IF_flush(IF_Flush),
     .IF_IDwrite(IF_IDwrite),
     .PC(PC_IF),
     .Instruction(Instruction_IF),
@@ -96,7 +104,11 @@ logic MEMtoReg_EX_MEM;
     .MEMwrite(m1_out[1]),
     .REGwrite(m1_out[5]),
     .MEMtoReg(m1_out[3]),
+    .Jump(Jump_ID),
+    .PC(PC_IF_ID),
     //Outputs
+    .PC_out(PC_ID_EX),
+    .Jump_out(Jump_ID_EX),
     .wr_out(wr_ID_EX),
     .Immediate_out(Immediate_ID_EX),
     .rd1_out(rd1_ID_EX),
@@ -159,7 +171,7 @@ logic MEMtoReg_EX_MEM;
     //Inputs
     .ck(ck),
     .reset(reset),
-    .PCsrc(Branch_ID),
+    .PCsrc(JumpTaken),
     .PCen(PCen),
     .Adder_ID(branchTarget_ID),
     //Outputs
@@ -181,7 +193,12 @@ logic MEMtoReg_EX_MEM;
     .ALUresult_MEM(ALUresult_EX_MEM),
     .ForwardA_ID(ForwardA_ID),
     .ForwardB_ID(ForwardB_ID),
+    .Jump(Jump),
+    .Stall(Stall),
+    .ForwardJ_ID(ForwardJ_ID),
     //Outputs
+    .Jump_out(Jump_ID),
+    .JumpTaken(JumpTaken),
     .rd1(rd1_ID),
     .rd2(rd2_ID),
     .branchTarget(branchTarget_ID),
@@ -190,7 +207,7 @@ logic MEMtoReg_EX_MEM;
     .Opcode(Opcode_ID),
     .funct7_funct3(funct7_funct3_ID),
     .rs2_rs1(rs2_rs1_ID),
-    .Branch_out(Branch_ID)
+    .IF_Flush(IF_Flush)
     );
  //Execute_Stage    --outputs ok  --inputs ok  --FATTO
  Execute_Stage s3 (
@@ -204,6 +221,7 @@ logic MEMtoReg_EX_MEM;
     .Forward_A(ForwardA_EX),
     .Forward_B(ForwardB_EX),
     .ALUcontrol(ALUcontrol),
+    .PC(PC_ID_EX),
     //Outputs
     .ALUresult(ALUresult_EX),
     .rd2_out(rd2_EX)
@@ -249,7 +267,8 @@ logic MEMtoReg_EX_MEM;
     .Opcode(Opcode_ID),
     //Outputs
     .ControlBus(ControlBus),
-    .ALUop(ALUop_Mux)
+    .ALUop(ALUop_Mux),
+    .Jump(Jump)
 );
  //Forwarding_Unit  --inputs ok  --outputs ok  --FATTO
  Forwarding_Unit c3 (
@@ -261,6 +280,7 @@ logic MEMtoReg_EX_MEM;
     .wr_EX(wr_ID_EX),
     .wr_MEM(wr_EX_MEM),
     .wr_WB(wr_MEM_WB),
+    .Jump(Jump_ID_EX),
     .REGwrite_EX(ControlBus[5]),
     .REGwrite_MEM(REGwrite_EX_MEM),
     .REGwrite_WB(REGwrite_MEM_WB),
@@ -268,7 +288,8 @@ logic MEMtoReg_EX_MEM;
     .ForwardA_EX(ForwardA_EX),
     .ForwardB_EX(ForwardB_EX),
     .ForwardA_ID(ForwardA_ID),
-    .ForwardB_ID(ForwardB_ID)
+    .ForwardB_ID(ForwardB_ID),
+    .ForwardJ_ID(ForwardJ_ID)
 );
  //Hazard_Detection_Unit  --outputs ok  --inputs ok  --FATTO
  Hazard_Detection_Unit c4 (
@@ -282,10 +303,12 @@ logic MEMtoReg_EX_MEM;
     .REGwrite_EX(REGwrite_ID_EX),
     .REGwrite_MEM(REGwrite_EX_MEM),
     .Branch(ControlBus[0]),
+    .Jump(Jump),
     //Outputs
     .IF_IDwrite(IF_IDwrite),
     .PCen(PCen),
-    .MuxControl(MuxControl)
+    .MuxControl(MuxControl),
+    .Stall(Stall)
 );
  
  

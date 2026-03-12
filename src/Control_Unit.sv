@@ -9,7 +9,8 @@ ControlBus[2] = MEMread
 ControlBus[1] = MEMwrite
 ControlBus[0] = Branch
 */
-output logic [6:0] ALUop);
+output logic [6:0] ALUop,
+output logic Jump);
 
 /*
 
@@ -32,6 +33,7 @@ always_comb
         7'b0110011: begin
              ControlBus = 6'b100000;
              ALUop = 7'b0000000;
+             Jump = 1'b0;
              end
              
         /*
@@ -48,6 +50,7 @@ always_comb
         7'b0010011: begin
              ControlBus = 6'b110000;
              ALUop = 7'b0000001;
+             Jump = 1'b0;
              end       
         
         /*
@@ -60,6 +63,7 @@ always_comb
         7'b0000011: begin
              ControlBus = 6'b111100;
              ALUop = 7'b0000010;
+            Jump = 1'b0; 
              end                  
         /*
         sb
@@ -68,7 +72,8 @@ always_comb
         */
         7'b0100011: begin
              ControlBus = 6'b01x010;
-             ALUop = 7'b0000011;            
+             ALUop = 7'b0000011;  
+             Jump = 1'b0;          
              end                
         /*
         beq
@@ -81,15 +86,24 @@ always_comb
         7'b1100011: begin
              ControlBus = 6'b00x001;
              ALUop = 7'b0000100;
+             Jump = 1'b0;
              end                       
         /*
         jal
-        jalr
         */           
         7'b1101111: begin
              ControlBus = 6'b11x000;
              ALUop = 7'b0000101;
-             end                         
+             Jump = 1'b1;
+             end   
+        /*
+        jalr  
+        */   
+        7'b1100111: begin
+             ControlBus = 6'b110000;
+             ALUop = 7'b0000101;
+             Jump = 1'b1;
+             end                   
         /*
         lui
         auipc
@@ -97,6 +111,7 @@ always_comb
         7'b0110111: begin
              ControlBus = 6'b110000;
              ALUop = 7'b0000110;
+             Jump = 1'b0;
              end   
         /*      
         auipc
@@ -104,6 +119,7 @@ always_comb
         7'b0010111: begin
              ControlBus = 6'b110000;
              ALUop = 7'b0000111;
+             Jump = 1'b0;
              end
         
         /*
@@ -119,6 +135,7 @@ always_comb
     //-------------------------        
         default: begin
         ControlBus = '0;
+        Jump = 1'b0;
         ALUop = 7'b10;
         end
     endcase

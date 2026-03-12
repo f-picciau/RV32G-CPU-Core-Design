@@ -4,6 +4,7 @@ input logic [31:0] rd2,
 input logic [31:0] Immediate,
 input logic [31:0] ALUresult_MEM,
 input logic [31:0] WriteData_WB,
+input logic [31:0] PC,
 input logic ALUsrc,
 input logic [1:0] Forward_A,
 input logic [1:0] Forward_B,
@@ -18,8 +19,8 @@ logic [31:0] m3_out;
 
 
 ALU a1(m1_out,m3_out,ALUcontrol,ALUresult);
-MUX_3 m1(Forward_A,rd1,WriteData_WB,ALUresult_MEM,m1_out);
-MUX_3 m2(Forward_B,rd2,WriteData_WB,ALUresult_MEM,m2_out);
+MUX_4 m1(Forward_A,rd1,WriteData_WB,ALUresult_MEM,PC,m1_out);
+MUX_4 m2(Forward_B,rd2,WriteData_WB,ALUresult_MEM,4,m2_out);
 MUX_2 m3(ALUsrc,Immediate,m2_out,m3_out);
 
 assign rd2_out = m2_out;

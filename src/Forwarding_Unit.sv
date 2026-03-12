@@ -9,14 +9,19 @@ input logic [4:0] wr_WB,
 input logic REGwrite_EX,
 input logic REGwrite_MEM,
 input logic REGwrite_WB,
+input logic Jump,
 output logic [1:0] ForwardA_EX,
 output logic [1:0] ForwardB_EX,
 output logic [1:0] ForwardA_ID,
-output logic [1:0] ForwardB_ID);
+output logic [1:0] ForwardB_ID,
+output logic [1:0] ForwardJ_ID);
 
 always_comb begin
+    //ForwardA_EX Jump
+    if(Jump)
+        ForwardA_EX = 2'b11;
     //ForwardA_EX MEM Hazard
-    if((REGwrite_MEM) && (wr_MEM != 0) && (wr_MEM == rs1_EX))
+    else if((REGwrite_MEM) && (wr_MEM != 0) && (wr_MEM == rs1_EX))
         ForwardA_EX = 2'b10;
     //ForwardA_EX WB Hazard
     else if((REGwrite_WB) && (wr_WB != 0) && (wr_WB == rs1_EX))
@@ -24,6 +29,9 @@ always_comb begin
     //ForwardA_EX No Hazard
     else ForwardA_EX = 2'b00;
     
+    //ForwardB_EX Jump
+    if(Jump)
+        ForwardB_EX = 2'b11;  
     //ForwardB_EX MEM Hazard
     if((REGwrite_MEM) && (wr_MEM != 0) && (wr_MEM == rs2_EX))
         ForwardB_EX = 2'b10;
@@ -59,8 +67,22 @@ always_comb begin
         ForwardB_ID = 2'b01;
     //ForwardB_ID No Hazard       
     else 
-        ForwardB_ID = 2'b00;   
-        
-              
+        ForwardB_ID = 2'b00;           
+end
+always_comb begin
+    //ForwardJ_ID WB Hazard
+    if((REGwrite_WB) && (wr_WB != 0) && (wr_WB == rs1_ID))
+        ForwardJ_ID = 2'b11;
+    //ForwardJ_ID MEM Hazard
+    else if((REGwrite_MEM) && (wr_MEM != 0) && (wr_MEM == rs1_ID))
+        ForwardJ_ID = 2'b10;
+    //ForwardJ_ID EX Hazard
+    else if((REGwrite_EX) && (wr_EX != 0) && (wr_EX == rs1_ID))
+        ForwardJ_ID = 2'b01;
+    //ForwardJ_ID No Hazard
+    else 
+        ForwardJ_ID = 2'b00;
+
+
 end
 endmodule

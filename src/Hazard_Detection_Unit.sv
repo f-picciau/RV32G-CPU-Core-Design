@@ -8,21 +8,25 @@ input logic MEMread_MEM,
 input logic REGwrite_EX,
 input logic REGwrite_MEM,
 input logic Branch,
+input logic Jump,
 output logic IF_IDwrite,
 output logic PCen,
-output logic MuxControl);
+output logic MuxControl,
+output logic Stall);
 
 always_comb begin
     //Default Pipeline Settings
     PCen = 1'b1;
     MuxControl = 1'b1;
     IF_IDwrite = 1'b1;
+    Stall = 1'b0;
     //LOAD Standard Use
     if((MEMread_EX) && (wr_EX != '0) && (wr_EX == rs1 || wr_EX == rs2))
         begin
         PCen = 1'b0;
         MuxControl = 1'b0;
         IF_IDwrite = 1'b0;
+        Stall = 1'b1;
         end
     //BRANCH in ID, LOAD in EX
     if((Branch) && (MEMread_EX) && (wr_EX != '0) && (wr_EX == rs1 || wr_EX == rs2))
@@ -30,6 +34,7 @@ always_comb begin
         PCen = 1'b0;
         MuxControl = 1'b0;
         IF_IDwrite = 1'b0;
+        Stall = 1'b1;
         end
     //BRANCH in ID, LOAD in MEM
     if((Branch) && (MEMread_MEM) && (wr_MEM != '0) && (wr_MEM == rs1 || wr_MEM == rs2))
@@ -37,6 +42,23 @@ always_comb begin
         PCen = 1'b0;
         MuxControl = 1'b0;
         IF_IDwrite = 1'b0;
+        Stall = 1'b1;
+        end
+    //JUMP in ID, LOAD in EX
+    if((Jump) && (MEMread_EX) && (wr_EX != '0) && (wr_EX == rs1))
+        begin
+        PCen = 1'b0;
+        MuxControl = 1'b0;
+        IF_IDwrite = 1'b0;
+        Stall = 1'b1;
+        end
+    //JUMP in ID, LOAD in MEM
+    if((Jump) && (MEMread_MEM) && (wr_MEM != '0) && (wr_MEM == rs1))
+        begin
+        PCen = 1'b0;
+        MuxControl = 1'b0;
+        IF_IDwrite = 1'b0;
+        Stall = 1'b1;
         end
 end
 endmodule

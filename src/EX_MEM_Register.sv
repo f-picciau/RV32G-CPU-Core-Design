@@ -21,7 +21,7 @@ output logic [2:0] funct3_out);
 always_ff@(posedge ck,posedge reset)
 if(reset) begin
 {MEMread_out,MEMwrite_out,REGwrite_out,MEMtoReg_out} <= '0;
-{ALUresult_out,rd2_out,wr_out} <= '0;
+{ALUresult_out,rd2_out,wr_out,funct3_out} <= '0;
 end
 else begin
 ALUresult_out <= ALUresult;
@@ -31,5 +31,7 @@ MEMread_out <= MEMread;
 MEMwrite_out <= MEMwrite;
 REGwrite_out <= REGwrite; 
 MEMtoReg_out <= MEMtoReg;
+funct3_out <= funct3;
+
 end
 endmodule
