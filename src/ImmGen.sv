@@ -14,6 +14,7 @@ case(Instruction[6:0])
 7'b1100011: Immediate = {{19{Instruction[31]}},Instruction[31],Instruction[7],Instruction[30:25],Instruction[11:8],1'b0};
 //U-type Instructions
 7'b0110111: Immediate = {Instruction[31:12],{12{1'b0}}};
+7'b0010111: Immediate = {Instruction[31:12],{12{1'b0}}};
 //UJ-type Instructions
 7'b1101111: Immediate = {{19{Instruction[31]}},Instruction[31],Instruction[19:12],Instruction[20],Instruction[30:21],1'b0};
 default: Immediate = '0;

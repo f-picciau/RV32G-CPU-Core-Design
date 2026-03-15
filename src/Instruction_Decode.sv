@@ -12,6 +12,7 @@ input logic [31:0] wd_WB,
 input logic [31:0] ALUresult_EX,
 input logic [31:0] ALUresult_MEM,
 input logic Jump,
+input logic jal,
 input logic [1:0] ForwardJ_ID,
 input logic Stall,
 output logic Jump_out,
@@ -44,9 +45,9 @@ BranchBlock u4(Instruction[14:12],m1_out,m2_out,BranchCondition);
 MUX_4 m1(ForwardA_ID,rd1_mux,wd_WB,ALUresult_MEM,ALUresult_EX,m1_out);
 MUX_4 m2(ForwardB_ID,rd2_mux,wd_WB,ALUresult_MEM,ALUresult_EX,m2_out);
 
-MUX_2 m3(Jump,jump_data,PC,m3_out);
+MUX_2 m3(jal_jalr,jump_data,PC,m3_out);
 MUX_4 m4(ForwardJ_ID,rd1,ALUresult_EX,ALUresult_MEM,wd_WB,jump_data);
-
+assign jal_jalr = !(jal && Jump);
 assign rd1_mux = rd1_temp;
 assign rd2_mux = rd2_temp;
 assign rd1 = m1_out;

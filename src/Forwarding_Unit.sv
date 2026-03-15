@@ -10,6 +10,7 @@ input logic REGwrite_EX,
 input logic REGwrite_MEM,
 input logic REGwrite_WB,
 input logic Jump,
+input logic auipc,
 output logic [1:0] ForwardA_EX,
 output logic [1:0] ForwardB_EX,
 output logic [1:0] ForwardA_ID,
@@ -18,7 +19,7 @@ output logic [1:0] ForwardJ_ID);
 
 always_comb begin
     //ForwardA_EX Jump
-    if(Jump)
+    if(Jump || auipc)
         ForwardA_EX = 2'b11;
     //ForwardA_EX MEM Hazard
     else if((REGwrite_MEM) && (wr_MEM != 0) && (wr_MEM == rs1_EX))
@@ -33,7 +34,7 @@ always_comb begin
     if(Jump)
         ForwardB_EX = 2'b11;  
     //ForwardB_EX MEM Hazard
-    if((REGwrite_MEM) && (wr_MEM != 0) && (wr_MEM == rs2_EX))
+    else if((REGwrite_MEM) && (wr_MEM != 0) && (wr_MEM == rs2_EX))
         ForwardB_EX = 2'b10;
     //ForwardB_EX WB Hazard
     else if((REGwrite_WB) && (wr_WB != 0) && (wr_WB == rs2_EX))
@@ -82,7 +83,5 @@ always_comb begin
     //ForwardJ_ID No Hazard
     else 
         ForwardJ_ID = 2'b00;
-
-
 end
 endmodule

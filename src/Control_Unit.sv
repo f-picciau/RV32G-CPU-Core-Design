@@ -10,6 +10,8 @@ ControlBus[1] = MEMwrite
 ControlBus[0] = Branch
 */
 output logic [6:0] ALUop,
+output logic auipc,
+output logic jal,
 output logic Jump);
 
 /*
@@ -92,21 +94,21 @@ always_comb
         jal
         */           
         7'b1101111: begin
-             ControlBus = 6'b11x000;
+             ControlBus = 6'b100000;
              ALUop = 7'b0000101;
              Jump = 1'b1;
+             jal = 1'b1;
              end   
         /*
         jalr  
         */   
         7'b1100111: begin
-             ControlBus = 6'b110000;
+             ControlBus = 6'b100000;
              ALUop = 7'b0000101;
              Jump = 1'b1;
              end                   
         /*
         lui
-        auipc
         */ 
         7'b0110111: begin
              ControlBus = 6'b110000;
@@ -118,8 +120,9 @@ always_comb
         */ 
         7'b0010111: begin
              ControlBus = 6'b110000;
-             ALUop = 7'b0000111;
+             ALUop = 7'b0000101;
              Jump = 1'b0;
+             auipc = 1'b1;
              end
         
         /*
@@ -136,7 +139,9 @@ always_comb
         default: begin
         ControlBus = '0;
         Jump = 1'b0;
+        auipc = 1'b0;
         ALUop = 7'b10;
+        jal = 1'b0;
         end
     endcase
 endmodule

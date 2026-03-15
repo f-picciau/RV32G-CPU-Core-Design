@@ -48,6 +48,9 @@ logic [2:0] funct3_EX_MEM;
 logic [1:0] ForwardJ_ID;
 logic [31:0] PC_ID_EX;
 
+logic jal;
+logic auipc;
+logic auipc_ID_EX;
 logic Jump_ID_EX;
 logic Jump_ID;
 logic JumpTaken;
@@ -90,6 +93,7 @@ logic MEMtoReg_EX_MEM;
  //ID_EX_Register  --outputs ok  --inputs ok  --FATTO
  ID_EX_Register r2 (
     //Inputs
+    .auipc(auipc),
     .reset(reset),
     .ck(ck),
     .wr(wr_ID),
@@ -107,6 +111,7 @@ logic MEMtoReg_EX_MEM;
     .Jump(Jump_ID),
     .PC(PC_IF_ID),
     //Outputs
+    .auipc_out(auipc_ID_EX),
     .PC_out(PC_ID_EX),
     .Jump_out(Jump_ID_EX),
     .wr_out(wr_ID_EX),
@@ -196,6 +201,7 @@ logic MEMtoReg_EX_MEM;
     .Jump(Jump),
     .Stall(Stall),
     .ForwardJ_ID(ForwardJ_ID),
+    .jal(jal),
     //Outputs
     .Jump_out(Jump_ID),
     .JumpTaken(JumpTaken),
@@ -268,11 +274,14 @@ logic MEMtoReg_EX_MEM;
     //Outputs
     .ControlBus(ControlBus),
     .ALUop(ALUop_Mux),
-    .Jump(Jump)
+    .Jump(Jump),
+    .auipc(auipc),
+    .jal(jal)
 );
  //Forwarding_Unit  --inputs ok  --outputs ok  --FATTO
  Forwarding_Unit c3 (
     //Inputs
+    .auipc(auipc_ID_EX),
     .rs1_EX(rs2_rs1_ID_EX[4:0]),
     .rs2_EX(rs2_rs1_ID_EX[9:5]),
     .rs1_ID(rs2_rs1_IF_ID[4:0]),
