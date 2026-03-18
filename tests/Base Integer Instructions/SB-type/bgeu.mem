@@ -1,0 +1,14 @@
+01400093 // PC 0x00: addi x1, x0, 20     
+fff00113 // PC 0x04: addi x2, x0, -1     
+0020f663 // PC 0x08: bgeu x1, x2, 12      
+00100213 // PC 0x0c: addi x4, x0, 1     
+00200213 // PC 0x10: addi x4, x0, 2       
+03200213 // PC 0x14: addi x4, x0, 50      
+00117663 // PC 0x18: bgeu x2, x1, 12    
+00300293 // PC 0x1c: addi x5, x0, 3       
+00400293 // PC 0x20: addi x5, x0, 4      
+04600293 // PC 0x24: addi x5, x0, 70      
+0010f663 // PC 0x28: bgeu x1, x1, 12      
+00000000 // PC 0x2c: nop
+00000000 // PC 0x30: nop
+00100313 // PC 0x34: addi x6, x0, 1       

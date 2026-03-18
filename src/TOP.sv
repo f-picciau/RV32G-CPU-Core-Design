@@ -290,7 +290,7 @@ logic MEMtoReg_EX_MEM;
     .wr_MEM(wr_EX_MEM),
     .wr_WB(wr_MEM_WB),
     .Jump(Jump_ID_EX),
-    .REGwrite_EX(ControlBus[5]),
+    .REGwrite_EX(REGwrite_ID_EX),
     .REGwrite_MEM(REGwrite_EX_MEM),
     .REGwrite_WB(REGwrite_MEM_WB),
     //Outputs

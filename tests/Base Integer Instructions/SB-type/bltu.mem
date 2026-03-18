@@ -1,0 +1,10 @@
+00a00093 // PC 0x00: addi x1, x0, 10     
+fff00113 // PC 0x04: addi x2, x0, -1     
+0020e663 // PC 0x08: bltu x1, x2, 12    
+00100213 // PC 0x0c: addi x4, x0, 1    
+00200213 // PC 0x10: addi x4, x0, 2       
+03200213 // PC 0x14: addi x4, x0, 50      
+00116663 // PC 0x18: bltu x2, x1, 12      
+00100293 // PC 0x1c: addi x5, x0, 1      
+0010e663 // PC 0x20: bltu x1, x1, 12      
+00200293 // PC 0x24: addi x5, x0, 2       
