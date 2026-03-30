@@ -21,10 +21,9 @@ always_comb
         3'b000: case(ALUop[3:0])
             4'b0000:
                 case(funct3)
-                    3'b000: begin
+                    3'b000:
                         if(funct7_bit5) ALUcontrol = SUB;            //SUB
                         else ALUcontrol = ADD;                       //ADD            
-                    end
                     3'b001: ALUcontrol = SLL;                        //SLL
                     3'b010: ALUcontrol = SLT;                        //SLT
                     3'b011: ALUcontrol = SLTU;                       //SLTU
@@ -83,6 +82,7 @@ always_comb
         3'b111: case(ALUop[3:0])
         endcase
         */
+        default: ALUcontrol = ADD;
         
 endcase 
     

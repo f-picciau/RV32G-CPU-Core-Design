@@ -36,6 +36,8 @@ always_comb
              ControlBus = 6'b100000;
              ALUop = 7'b0000000;
              Jump = 1'b0;
+             jal = 1'b0;
+             auipc = 1'b0;
              end
              
         /*
@@ -53,6 +55,8 @@ always_comb
              ControlBus = 6'b110000;
              ALUop = 7'b0000001;
              Jump = 1'b0;
+             jal = 1'b0;
+             auipc = 1'b0;
              end       
         
         /*
@@ -65,7 +69,9 @@ always_comb
         7'b0000011: begin
              ControlBus = 6'b111100;
              ALUop = 7'b0000010;
-            Jump = 1'b0; 
+             Jump = 1'b0; 
+             jal = 1'b0;
+             auipc = 1'b0;
              end                  
         /*
         sb
@@ -75,7 +81,9 @@ always_comb
         7'b0100011: begin
              ControlBus = 6'b01x010;
              ALUop = 7'b0000011;  
-             Jump = 1'b0;          
+             Jump = 1'b0;  
+             jal = 1'b0;
+             auipc = 1'b0;        
              end                
         /*
         beq
@@ -89,6 +97,8 @@ always_comb
              ControlBus = 6'b00x001;
              ALUop = 7'b0000100;
              Jump = 1'b0;
+             jal = 1'b0;
+             auipc = 1'b0;
              end                       
         /*
         jal
@@ -98,6 +108,7 @@ always_comb
              ALUop = 7'b0000101;
              Jump = 1'b1;
              jal = 1'b1;
+             auipc = 1'b0;
              end   
         /*
         jalr  
@@ -106,6 +117,8 @@ always_comb
              ControlBus = 6'b100000;
              ALUop = 7'b0000101;
              Jump = 1'b1;
+             jal = 1'b0;
+             auipc = 1'b0;
              end                   
         /*
         lui
@@ -114,6 +127,8 @@ always_comb
              ControlBus = 6'b110000;
              ALUop = 7'b0000110;
              Jump = 1'b0;
+             jal = 1'b0;
+             auipc = 1'b0;
              end   
         /*      
         auipc
@@ -122,6 +137,7 @@ always_comb
              ControlBus = 6'b110000;
              ALUop = 7'b0000101;
              Jump = 1'b0;
+             jal = 1'b0;
              auipc = 1'b1;
              end
         

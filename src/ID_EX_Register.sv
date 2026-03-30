@@ -17,6 +17,9 @@ input logic MEMread,
 input logic MEMwrite,
 input logic REGwrite,
 input logic MEMtoReg,
+input logic ID_Flush,
+input logic Branch,
+input logic jal,
 output logic auipc_out,
 output logic [31:0] PC_out,
 output logic Jump_out,
@@ -31,14 +34,18 @@ output logic [6:0] ALUop_out,
 output logic MEMread_out,
 output logic MEMwrite_out,
 output logic REGwrite_out,
-output logic MEMtoReg_out);
+output logic MEMtoReg_out,
+output logic jal_out,
+output logic Branch_out);
 
 always_ff@(posedge ck, posedge reset)
-if(reset)begin
-{ALUsrc_out,ALUop_out,MEMread_out,MEMwrite_out,REGwrite_out,MEMtoReg_out} <= '0;
+if(reset || ID_Flush) begin
+{ALUsrc_out,ALUop_out,MEMread_out,MEMwrite_out,REGwrite_out,MEMtoReg_out,jal_out,Branch_out} <= '0;
 {wr_out,Immediate_out,rd1_out,rd2_out,rs2_rs1_out,funct7_funct3_out,Jump_out,PC_out,auipc_out} <= '0;
 end
 else begin
+Branch_out <= Branch;
+jal_out <= jal;
 wr_out <= wr;
 Immediate_out <= Immediate; 
 rd1_out <= rd1;

@@ -7,7 +7,7 @@ input logic MEMwrite,
 input logic MEMread,
 output logic [31:0] ReadData);
 
-logic [31:0] RAM [0:511];
+logic [31:0] RAM [0:63];
 
 always_ff@(posedge ck) 
     if(MEMwrite) 
@@ -22,12 +22,8 @@ always_ff@(posedge ck)
             4'b1100: RAM[Address[31:2]][31:16] <= WriteData[31:16];
             //LW
             4'b1111: RAM[Address[31:2]] <= WriteData[31:0];
-        endcase
-always_comb
-    if(MEMread)
-        ReadData = RAM[Address[31:2]];
-    else 
-        ReadData = '0;
-
+            default: ;        
+         endcase
+assign ReadData = (MEMread)?RAM[Address[31:2]]:'0;
 
 endmodule

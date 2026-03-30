@@ -13,75 +13,58 @@ input logic Jump,
 input logic auipc,
 output logic [1:0] ForwardA_EX,
 output logic [1:0] ForwardB_EX,
+output logic [1:0] ForwardC_EX,
 output logic [1:0] ForwardA_ID,
-output logic [1:0] ForwardB_ID,
-output logic [1:0] ForwardJ_ID);
+output logic [1:0] ForwardB_ID);
 
-always_comb begin
-    //ForwardA_EX Jump
-    if(Jump || auipc)
-        ForwardA_EX = 2'b11;
-    //ForwardA_EX MEM Hazard
-    else if((REGwrite_MEM) && (wr_MEM != 0) && (wr_MEM == rs1_EX))
-        ForwardA_EX = 2'b10;
-    //ForwardA_EX WB Hazard
-    else if((REGwrite_WB) && (wr_WB != 0) && (wr_WB == rs1_EX))
-        ForwardA_EX = 2'b01;
-    //ForwardA_EX No Hazard
-    else ForwardA_EX = 2'b00;
-    
-    //ForwardB_EX Jump
-    if(Jump)
-        ForwardB_EX = 2'b11;  
-    //ForwardB_EX MEM Hazard
-    else if((REGwrite_MEM) && (wr_MEM != 0) && (wr_MEM == rs2_EX))
-        ForwardB_EX = 2'b10;
-    //ForwardB_EX WB Hazard
-    else if((REGwrite_WB) && (wr_WB != 0) && (wr_WB == rs2_EX))
-        ForwardB_EX = 2'b01;
-    //ForwardB_EX No Hazard
-    else ForwardB_EX = 2'b00;
-end
+logic EX;
+logic MEM;
+logic WB;
 
-always_comb begin
-    //ForwardA_ID EX Hazard
-    if((REGwrite_EX) && (wr_EX != 0) && (wr_EX == rs1_ID))
-        ForwardA_ID = 2'b11;
-    //ForwardA_ID MEM Hazard
-    else if((REGwrite_MEM) && (wr_MEM != 0) && (wr_MEM == rs1_ID))
-        ForwardA_ID = 2'b10;
-    //ForwardA_ID WB Hazard
-    else if((REGwrite_WB) && (wr_WB != 0) && (wr_WB == rs1_ID))
-        ForwardA_ID = 2'b01;
-    //ForwardA_ID No Hazard       
-    else 
-        ForwardA_ID = 2'b00;
-     
-    //ForwardB_ID EX Hazard
-    if((REGwrite_EX) && (wr_EX != 0) && (wr_EX == rs2_ID))
-        ForwardB_ID = 2'b11;  
-    //ForwardB_ID MEM Hazard
-    else if((REGwrite_MEM) && (wr_MEM != 0) && (wr_MEM == rs2_ID))
-        ForwardB_ID = 2'b10;
-    //ForwardB_ID WB Hazard
-    else if((REGwrite_WB) && (wr_WB != 0) && (wr_WB == rs2_ID))
-        ForwardB_ID = 2'b01;
-    //ForwardB_ID No Hazard       
-    else 
-        ForwardB_ID = 2'b00;           
-end
-always_comb begin
-    //ForwardJ_ID WB Hazard
-    if((REGwrite_WB) && (wr_WB != 0) && (wr_WB == rs1_ID))
-        ForwardJ_ID = 2'b11;
-    //ForwardJ_ID MEM Hazard
-    else if((REGwrite_MEM) && (wr_MEM != 0) && (wr_MEM == rs1_ID))
-        ForwardJ_ID = 2'b10;
-    //ForwardJ_ID EX Hazard
-    else if((REGwrite_EX) && (wr_EX != 0) && (wr_EX == rs1_ID))
-        ForwardJ_ID = 2'b01;
-    //ForwardJ_ID No Hazard
-    else 
-        ForwardJ_ID = 2'b00;
-end
+logic EX_MEM_rs1, EX_WB_rs1;
+logic EX_MEM_rs2, EX_WB_rs2;
+
+logic ID_EX_rs1, ID_MEM_rs1, ID_WB_rs1;
+logic ID_EX_rs2, ID_MEM_rs2, ID_WB_rs2;
+
+
+assign EX = ((REGwrite_EX) && (wr_EX != 0));
+assign MEM = ((REGwrite_MEM) && (wr_MEM != 0));
+assign WB =  ((REGwrite_WB) && (wr_WB != 0));
+
+assign EX_MEM_rs1 = MEM && (wr_MEM == rs1_EX);
+assign EX_WB_rs1 = WB && (wr_WB == rs1_EX);
+assign EX_MEM_rs2 = MEM && (wr_MEM == rs2_EX);
+assign EX_WB_rs2 = WB && (wr_WB == rs2_EX);
+
+
+assign ID_EX_rs1 = EX && (wr_EX == rs1_ID);
+assign ID_MEM_rs1 = MEM && (wr_MEM == rs1_ID);
+assign ID_WB_rs1 = WB && (wr_WB == rs1_ID);
+assign ID_EX_rs2 = EX && (wr_EX == rs2_ID);
+assign ID_MEM_rs2 = MEM && (wr_MEM == rs2_ID);
+assign ID_WB_rs2 = WB && (wr_WB == rs2_ID);
+
+
+
+
+//ForwardA_EX
+assign ForwardA_EX = (Jump || auipc)?2'b11:        //Jump / auipc
+                     (EX_MEM_rs1)   ?2'b10:        //MEM Hazard
+                     (EX_WB_rs1)    ?2'b01:2'b00;  //WB Hazard / No Hazard
+//ForwardB_EX
+assign ForwardB_EX = (Jump)         ?2'b11:        //Jump
+                     (EX_MEM_rs2)   ?2'b10:        //MEM Hazard
+                     (EX_WB_rs2)    ?2'b01:2'b00;  //WB Hazard / No Hazard  
+//ForwardC_EX
+assign ForwardC_EX = (EX_MEM_rs2)   ?2'b10:        //MEM Hazard
+                     (EX_WB_rs2)    ?2'b01:2'b00;  //WB Hazard / No Hazard              
+//ForwardA_ID
+assign ForwardA_ID = (ID_EX_rs1)    ?2'b11:        //EX Hazard
+                     (ID_MEM_rs1)   ?2'b10:        //MEM Hazard
+                     (ID_WB_rs1)    ?2'b01:2'b00;  //WB Hazard / No Hazard
+//ForwardB_ID
+assign ForwardB_ID = (ID_EX_rs2)    ?2'b11:        //EX Hazard
+                     (ID_MEM_rs2)   ?2'b10:        //MEM Hazard
+                     (ID_WB_rs2)    ?2'b01:2'b00;  //WB Hazard / No Hazard
 endmodule

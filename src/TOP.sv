@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module TOP( 
 input logic ck,
 input logic reset,
@@ -5,7 +6,7 @@ output logic [31:0] DataOut,
 output logic [31:0] PC,
 output logic [31:0] Instruction);
 
-logic [31:0] branchTarget_ID;
+logic [31:0] branchTarget_EX;
 logic [31:0] PC_IF;
 logic [31:0] Instruction_IF;
 logic [6:0] ALUop_Mux;
@@ -39,9 +40,10 @@ logic [31:0] ReadData_MEM_WB;
 logic [31:0] ALUresult_MEM_WB;
 logic [5:0] ALUcontrol;
 logic [5:0] ControlBus;
-logic [12:0] m1_out;
+logic [15:0] m1_out;
 logic [1:0] ForwardA_EX;
 logic [1:0] ForwardB_EX;
+logic [1:0] ForwardC_EX;
 logic [1:0] ForwardA_ID;
 logic [1:0] ForwardB_ID;
 logic [2:0] funct3_EX_MEM;
@@ -72,16 +74,18 @@ logic MEMread_EX_MEM;
 logic MEMwrite_EX_MEM;
 logic REGwrite_EX_MEM;
 logic MEMtoReg_EX_MEM;
+logic Branch_ID_EX;
+logic jal_ID_EX;
 
 
  //---------- STAGES REGISTERS ----------   
  
- //IF_ID_Register  --outputs ok  --inputs ok --FATTO
+ //IF_ID_Register  
  IF_ID_Register r1 (
     //Inputs
     .ck(ck),
     .reset(reset),
-    .IF_flush(IF_Flush),
+    .IF_flush(JumpTaken),
     .IF_IDwrite(IF_IDwrite),
     .PC(PC_IF),
     .Instruction(Instruction_IF),
@@ -90,10 +94,10 @@ logic MEMtoReg_EX_MEM;
     .Instruction_out(Instruction_IF_ID),
     .rs2_rs1(rs2_rs1_IF_ID)
 );
- //ID_EX_Register  --outputs ok  --inputs ok  --FATTO
+ //ID_EX_Register  
  ID_EX_Register r2 (
     //Inputs
-    .auipc(auipc),
+    .auipc(m1_out[0]),
     .reset(reset),
     .ck(ck),
     .wr(wr_ID),
@@ -102,18 +106,23 @@ logic MEMtoReg_EX_MEM;
     .rd1(rd1_ID),
     .rd2(rd2_ID),
     .funct7_funct3(funct7_funct3_ID),
-    .ALUsrc(m1_out[4]),
-    .ALUop(m1_out[12:6]),
-    .MEMread(m1_out[2]),
-    .MEMwrite(m1_out[1]),
-    .REGwrite(m1_out[5]),
-    .MEMtoReg(m1_out[3]),
-    .Jump(Jump_ID),
+    .ALUsrc(m1_out[7]),
+    .ALUop(m1_out[15:9]),
+    .MEMread(m1_out[5]),
+    .MEMwrite(m1_out[4]),
+    .REGwrite(m1_out[8]),
+    .MEMtoReg(m1_out[6]),
+    .Jump(m1_out[2]),
     .PC(PC_IF_ID),
+    .ID_Flush(JumpTaken),
+    .jal(m1_out[1]),
+    .Branch(m1_out[3]),
     //Outputs
     .auipc_out(auipc_ID_EX),
     .PC_out(PC_ID_EX),
     .Jump_out(Jump_ID_EX),
+    .Branch_out(Branch_ID_EX),
+    .jal_out(jal_ID_EX),
     .wr_out(wr_ID_EX),
     .Immediate_out(Immediate_ID_EX),
     .rd1_out(rd1_ID_EX),
@@ -127,7 +136,7 @@ logic MEMtoReg_EX_MEM;
     .REGwrite_out(REGwrite_ID_EX),
     .MEMtoReg_out(MEMtoReg_ID_EX)
 );
- //EX_MEM_Register  --inputs ok  --outputs ok  --FATTO
+ //EX_MEM_Register  
  EX_MEM_Register r3 (
     //Inputs
     .ck(ck),
@@ -150,7 +159,7 @@ logic MEMtoReg_EX_MEM;
     .MEMtoReg_out(MEMtoReg_EX_MEM),
     .funct3_out(funct3_EX_MEM)
 );
- //MEM_WB_Register  --inputs ok --outputs ok  --FATTO
+ //MEM_WB_Register  
  MEM_WB_Register r4 (
     //Inputs
     .ck(ck),
@@ -171,19 +180,19 @@ logic MEMtoReg_EX_MEM;
  
  //---------- STAGES ----------
  
- //Instruction_Fetch   --outputs ok  --inputs ok  --FATTO
+ //Instruction_Fetch   
  Instruction_Fetch s1 (
     //Inputs
     .ck(ck),
     .reset(reset),
     .PCsrc(JumpTaken),
     .PCen(PCen),
-    .Adder_ID(branchTarget_ID),
+    .Adder_ID(branchTarget_EX),
     //Outputs
     .PC(PC_IF),
     .Instruction(Instruction_IF)
 );
- //Instruction_Decode  --outputs ok  --inputs ok  --FATTO
+ //Instruction_Decode  
  Instruction_Decode s2 (
     //Inputs
     .ck(ck),
@@ -193,29 +202,20 @@ logic MEMtoReg_EX_MEM;
     .Instruction(Instruction_IF_ID),
     .wr_WB(wr_MEM_WB),
     .wd_WB(DataOut_WB),
-    .Branch(m1_out[0]),
     .ALUresult_EX(ALUresult_EX),
     .ALUresult_MEM(ALUresult_EX_MEM),
     .ForwardA_ID(ForwardA_ID),
     .ForwardB_ID(ForwardB_ID),
-    .Jump(Jump),
-    .Stall(Stall),
-    .ForwardJ_ID(ForwardJ_ID),
-    .jal(jal),
     //Outputs
-    .Jump_out(Jump_ID),
-    .JumpTaken(JumpTaken),
     .rd1(rd1_ID),
     .rd2(rd2_ID),
-    .branchTarget(branchTarget_ID),
     .Immediate(Immediate_ID),
     .wr(wr_ID),
     .Opcode(Opcode_ID),
     .funct7_funct3(funct7_funct3_ID),
-    .rs2_rs1(rs2_rs1_ID),
-    .IF_Flush(IF_Flush)
+    .rs2_rs1(rs2_rs1_ID)
     );
- //Execute_Stage    --outputs ok  --inputs ok  --FATTO
+ //Execute_Stage   
  Execute_Stage s3 (
     //Inputs
     .rd1(rd1_ID_EX),
@@ -226,13 +226,20 @@ logic MEMtoReg_EX_MEM;
     .ALUsrc(ALUsrc_ID_EX),
     .Forward_A(ForwardA_EX),
     .Forward_B(ForwardB_EX),
+    .Forward_C(ForwardC_EX),
     .ALUcontrol(ALUcontrol),
+    .funct3(funct7_funct3_ID_EX[2:0]),
     .PC(PC_ID_EX),
+    .Branch(Branch_ID_EX),
+    .Jump(Jump_ID_EX),
+    .jal(jal_ID_EX),
     //Outputs
+    .JumpTaken(JumpTaken),
+    .BranchTarget(branchTarget_EX),
     .ALUresult(ALUresult_EX),
     .rd2_out(rd2_EX)
 );
- //Memory_Stage  --outputs ok  --inputs ok  --FATTO
+ //Memory_Stage  
  Memory_Stage s4 (
     //Inputs
     .ck(ck),
@@ -245,7 +252,7 @@ logic MEMtoReg_EX_MEM;
     .ALUresult_out(ALUresult_MEM),
     .ReadData(ReadData_MEM)
 );
- //Write_Back_Stage  --inputs ok --outputs ok  --FATTO
+ //Write_Back_Stage  
  Write_Back_Stage s5 (
     //Inputs
     .MEMtoReg(MEMtoReg_MEM_WB),
@@ -258,7 +265,7 @@ logic MEMtoReg_EX_MEM;
  
  //---------- CONTROL BLOCKS ----------
  
- //ALU_Control_Unit  --inputs ok  --output ok  -FATTO
+ //ALU_Control_Unit  
  ALU_Control_Unit c1 (
     //Input
     .ALUop(ALUop_ID_EX),
@@ -267,7 +274,7 @@ logic MEMtoReg_EX_MEM;
     //Output
     .ALUcontrol(ALUcontrol)
 );
- //Control_Unit  --input ok  --outputs ok  --FATTO
+ //Control_Unit  
  Control_Unit c2 (
     //Input
     .Opcode(Opcode_ID),
@@ -278,7 +285,7 @@ logic MEMtoReg_EX_MEM;
     .auipc(auipc),
     .jal(jal)
 );
- //Forwarding_Unit  --inputs ok  --outputs ok  --FATTO
+ //Forwarding_Unit  
  Forwarding_Unit c3 (
     //Inputs
     .auipc(auipc_ID_EX),
@@ -296,11 +303,11 @@ logic MEMtoReg_EX_MEM;
     //Outputs
     .ForwardA_EX(ForwardA_EX),
     .ForwardB_EX(ForwardB_EX),
+    .ForwardC_EX(ForwardC_EX),
     .ForwardA_ID(ForwardA_ID),
-    .ForwardB_ID(ForwardB_ID),
-    .ForwardJ_ID(ForwardJ_ID)
+    .ForwardB_ID(ForwardB_ID)
 );
- //Hazard_Detection_Unit  --outputs ok  --inputs ok  --FATTO
+ //Hazard_Detection_Unit  
  Hazard_Detection_Unit c4 (
     //Inputs
     .rs1(rs2_rs1_ID[4:0]),
@@ -319,20 +326,9 @@ logic MEMtoReg_EX_MEM;
     .MuxControl(MuxControl),
     .Stall(Stall)
 );
+assign m1_out = (MuxControl) ? {ALUop_Mux, ControlBus[5:0], Jump, jal, auipc} : 16'b0;
+assign DataOut = DataOut_WB;
+assign PC = PC_IF;
+assign Instruction = Instruction_IF;
  
- 
- //MUX Hazard_Detection_Unit - Control_Unit  --inputs ok  --output ok  --FATTO
- MUX_2_12bits m1 (
-    //Inputs
-    .sel(MuxControl),
-    .A({ALUop_Mux,ControlBus}),
-    .B('0),
-    //Output
-    .out(m1_out)
-);
- 
- assign DataOut = DataOut_WB;
- assign PC = PC_IF;
- assign Instruction = Instruction_IF;
- 
- endmodule
+endmodule
